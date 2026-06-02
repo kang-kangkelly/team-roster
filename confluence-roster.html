@@ -396,14 +396,7 @@
   </div>
 
   <!-- Filters -->
-  <div class="filters">
-    <span>Show:</span>
-    <button class="filter-chip active" data-f="all">All staff</button>
-    <button class="filter-chip" data-f="Senior">Senior</button>
-    <button class="filter-chip" data-f="Mid-level">Mid-level</button>
-    <button class="filter-chip" data-f="Junior">Junior</button>
-    <button class="filter-chip" data-f="Lead">Lead</button>
-  </div>
+
 
   <!-- Legend -->
   <div class="legend">
@@ -459,7 +452,7 @@
 
 <script>
 const CYCLE=['D','N','L','O'];
-const ROLES=['Senior','Mid-level','Junior','Lead','Contractor'];
+const ROLES=[];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
@@ -516,15 +509,15 @@ function render(){
   const wds=workdays(STATE.year,STATE.month);
   const groups=weekGroups(wds);
   const firstG=new Set(groups.map(g=>g[0]));
-  const visible=FILTER==='all'?STATE.staff:STATE.staff.filter(s=>s.role===FILTER);
+  const visible=STATE.staff;
 
   /* header */
   document.getElementById('header-month').textContent=MONTHS[STATE.month]+' '+STATE.year;
   document.getElementById('updated-date').textContent=new Date().toLocaleDateString('en-AU');
 
   /* thead */
-  let h1='<tr><th class="h-name">Name</th><th class="h-role">Role</th>';
-  let h2='<tr><th class="h-name"></th><th class="h-role"></th>';
+  let h1='<tr><th class="h-name">Name</th>';
+  let h2='<tr><th class="h-name"></th>';
   groups.forEach((g,gi)=>{
     g.forEach((d,di)=>{
       const ws=di===0&&gi>0?' wk-sep':'';
@@ -541,9 +534,9 @@ function render(){
   visible.forEach(p=>{
     const tr=document.createElement('tr');
     let c=`<td class="t-name"><input class="name-in" value="${p.name}" data-id="${p.id}" placeholder="Name"></td>`;
-    c+=`<td class="t-role"><select class="role-in" data-id="${p.id}">`;
+    
     ROLES.forEach(r=>{c+=`<option${r===p.role?' selected':''}>${r}</option>`;});
-    c+=`</select></td>`;
+    
     wds.forEach((d,di)=>{
       const sh=gs(p,d);
       const ws=firstG.has(d)&&di>0?' wk-sep':'';
@@ -698,7 +691,7 @@ document.getElementById('export-btn').addEventListener('click',()=>{
   STATE.staff.forEach(s=>wds.forEach(day=>{const sh=gs(s,day);if(sh==='D')d++;else if(sh==='N')n++;else if(sh==='L')l++;}));
 
   const rosterRows=STATE.staff.map(p=>{
-    let r=`<tr><td style="text-align:left;padding:6px 10px;font-weight:600">${p.name}</td><td style="text-align:left;padding:6px 4px;font-size:11px;color:#6B778C">${p.role}</td>`;
+    let r=`<tr><td style="text-align:left;padding:6px 10px;font-weight:600">${p.name}</td>`;
     wds.forEach((day,di)=>{
       const sh=gs(p,day);
       const ws=firstG.has(day)&&di>0?'border-left:2px solid #DFE1E6;':'';
@@ -725,7 +718,7 @@ document.getElementById('export-btn').addEventListener('click',()=>{
 <h1>Monthly Roster Plan</h1>
 <div class="meta">${MONTHS[STATE.month]} ${STATE.year} · ${STATE.staff.length} staff · Min coverage: ${MIN} · Generated ${new Date().toLocaleDateString('en-AU')}</div>
 ${gaps.length?`<div class="alert"><strong>⚠ ${gaps.length} coverage gap${gaps.length>1?'s':''} detected</strong> — ${gaps.map(d=>`${MONTHS[STATE.month]} ${d}`).join(' · ')} — below minimum of ${MIN} staff on shift</div>`:`<div class="ok"><strong>✓ Full coverage</strong> — all working days meet the minimum threshold of ${MIN} staff on shift</div>`}
-<h2>Shift schedule</h2><div class="tw"><table><thead><tr><th class="nl">Name</th><th class="nl" style="min-width:75px">Role</th>${groups.map((g,gi)=>g.map((dy,di)=>`<th${di===0&&gi>0?' style="border-left:2px solid #DFE1E6"':''}>${dy}</th>`).join('')).join('')}</tr></thead><tbody>${rosterRows}</tbody></table></div>
+<h2>Shift schedule</h2><div class="tw"><table><thead><tr><th class="nl">Name</th>${groups.map((g,gi)=>g.map((dy,di)=>`<th${di===0&&gi>0?' style="border-left:2px solid #DFE1E6"':''}>${dy}</th>`).join('')).join('')}</tr></thead><tbody>${rosterRows}</tbody></table></div>
 <div class="stats"><div class="stat"><div class="sl">Team</div><div class="sv">${STATE.staff.length}</div></div><div class="stat"><div class="sl">Day shifts</div><div class="sv">${d}</div></div><div class="stat"><div class="sl">Night shifts</div><div class="sv">${n}</div></div><div class="stat"><div class="sl">Leave days</div><div class="sv">${l}</div></div><div class="stat"><div class="sl">Gaps</div><div class="sv${gaps.length?' sv-r':''}">${gaps.length}</div></div></div>
 <h2>Per-day coverage breakdown</h2><div class="tw"><table><thead><tr><th class="nl">Date</th><th class="nl">Day</th><th class="nl">On shift</th><th class="nl">Status</th><th class="nl">Day shift staff</th><th class="nl">Night shift staff</th></tr></thead><tbody>${breakdownRows}</tbody></table></div>
 </body></html>`;
