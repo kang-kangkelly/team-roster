@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Roster Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0D0D0D;
+    --ink-2: #444;
+    --ink-3: #888;
+    --ink-4: #bbb;
+    --surface: #fff;
+    --surface-2: #F7F7F5;
+    --surface-3: #EFEFEC;
+    --border: #E2E2DC;
+    --border-strong: #C8C8C0;
+    --day-bg: #E8F0FF; --day-text: #1A3A8F; --day-border: #BCCEFF;
+    --night-bg: #F0EAFF; --night-text: #3D1A8F; --night-border: #CFC0FF;
+    --leave-bg: #E6F7EE; --leave-text: #0F5C30; --leave-border: #A8E0BF;
+    --off-bg: #F7F7F5; --off-text: #888; --off-border: #E2E2DC;
+    --danger: #C0271D; --danger-bg: #FFF0EF; --danger-border: #FFBFBB;
+    --warn-bg: #FFF8EC; --warn-text: #8A5500; --warn-border: #FFD990;
+    --ok-bg: #EDFAF3; --ok-text: #0F5C30; --ok-border: #A8E0BF;
+    --accent: #2040D0;
+    --radius: 6px;
+    --radius-sm: 4px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface-2);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .page-shell {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 28px 60px;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .page-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .page-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: var(--mono);
+  }
+  .page-meta span { display: flex; align-items: center; gap: 4px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 500;
+    padding: 3px 10px; border-radius: 99px;
+    background: var(--warn-bg); color: var(--warn-text);
+    border: 1px solid var(--warn-border);
+    font-family: var(--font);
+  }
+
+  /* ── Controls bar ── */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .ctrl-group label { white-space: nowrap; font-weight: 500; }
+  .ctrl-group input[type=month],
+  .ctrl-group input[type=range],
+  .ctrl-group select {
+    font-family: var(--mono);
+    font-size: 12px;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+  }
+  .ctrl-group input[type=range] { width: 90px; accent-color: var(--accent); }
+  .ctrl-val { font-family: var(--mono); font-weight: 500; min-width: 12px; color: var(--accent); }
+  .spacer { flex: 1; }
+  button.act {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font); font-size: 12px; font-weight: 500;
+    padding: 6px 14px; border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink-2);
+    cursor: pointer; transition: all .15s;
+    white-space: nowrap;
+  }
+  button.act:hover { background: var(--surface-3); border-color: var(--border-strong); color: var(--ink); }
+  button.act.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.act.primary:hover { opacity: .88; }
+  button.act svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* ── Filters ── */
+  .filters {
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap; margin-bottom: 12px;
+    font-size: 12px; color: var(--ink-3);
+  }
+  .filter-chip {
+    font-family: var(--font); font-size: 11px; font-weight: 500;
+    padding: 4px 12px; border-radius: 99px;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink-3);
+    cursor: pointer; transition: all .12s;
+  }
+  .filter-chip:hover { border-color: var(--border-strong); color: var(--ink); }
+  .filter-chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap; margin-bottom: 14px;
+    font-size: 12px; color: var(--ink-3);
+  }
+  .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-swatch {
+    width: 30px; height: 18px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 600; font-family: var(--mono);
+    border: 1px solid transparent;
+  }
+  .leg-D { background: var(--day-bg); color: var(--day-text); border-color: var(--day-border); }
+  .leg-N { background: var(--night-bg); color: var(--night-text); border-color: var(--night-border); }
+  .leg-L { background: var(--leave-bg); color: var(--leave-text); border-color: var(--leave-border); }
+  .leg-O { background: var(--off-bg); color: var(--off-text); border-color: var(--off-border); }
+  .drag-tip { margin-left: 6px; font-size: 11px; color: var(--ink-4); display: flex; align-items: center; gap: 4px; }
+
+  /* ── Alert banner ── */
+  .alert-banner {
+    display: none;
+    align-items: flex-start; gap: 10px;
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-left: 4px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12.5px; color: var(--danger);
+    margin-bottom: 14px;
+  }
+  .alert-banner.show { display: flex; }
+  .alert-banner svg { flex-shrink: 0; margin-top: 1px; width: 15px; height: 15px; }
+
+  /* ── Roster table ── */
+  .tbl-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    background: var(--surface);
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    margin-bottom: 16px;
+  }
+  table { border-collapse: collapse; width: 100%; min-width: 740px; table-layout: fixed; }
+  thead th {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    color: var(--ink-3); text-align: center;
+    padding: 8px 2px; background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    user-select: none; white-space: nowrap;
+  }
+  thead th.h-name { text-align: left; padding-left: 14px; width: 120px; font-family: var(--font); font-size: 11px; }
+  thead th.h-role { text-align: left; width: 85px; font-family: var(--font); font-size: 11px; }
+  thead th.h-del { width: 32px; }
+  thead th.wk-sep { border-left: 1px solid var(--border-strong); }
+  thead th.today-h { background: var(--day-bg); color: var(--day-text); }
+
+  tbody tr { border-bottom: 1px solid var(--surface-3); transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+
+  td { padding: 3px 2px; text-align: center; vertical-align: middle; }
+  td.t-name { text-align: left; padding-left: 14px; }
+  td.t-role { padding-left: 2px; }
+  td.t-del { padding: 2px 4px; }
+  td.wk-sep { border-left: 1px solid var(--border); }
+  td.today-col { background: rgba(32, 64, 208, 0.04); }
+
+  .name-in {
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    color: var(--ink); border: none; background: transparent;
+    width: 100%; padding: 2px 6px; border-radius: var(--radius-sm);
+  }
+  .name-in:focus { outline: none; background: var(--surface-3); }
+  .role-in {
+    font-family: var(--font); font-size: 11px; color: var(--ink-3);
+    border: none; background: transparent; width: 100%; padding: 2px;
+    cursor: pointer;
+  }
+  .role-in:focus { outline: none; }
+
+  .sc {
+    width: 100%; padding: 4px 0; border-radius: var(--radius-sm);
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    border: 1px solid transparent; cursor: pointer;
+    letter-spacing: .3px; user-select: none; transition: opacity .1s;
+  }
+  .sc:hover { opacity: .75; }
+  .sc-D { background: var(--day-bg); color: var(--day-text); border-color: var(--day-border); }
+  .sc-N { background: var(--night-bg); color: var(--night-text); border-color: var(--night-border); }
+  .sc-L { background: var(--leave-bg); color: var(--leave-text); border-color: var(--leave-border); }
+  .sc-O { background: var(--off-bg); color: var(--off-text); border-color: var(--off-border); }
+  .sc.gap-flag { outline: 2px solid var(--danger); outline-offset: -1px; }
+
+  .del-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-4); font-size: 15px; padding: 2px 5px;
+    border-radius: var(--radius-sm); line-height: 1;
+  }
+  .del-btn:hover { color: var(--danger); background: var(--danger-bg); }
+
+  /* ── Stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .stat-lbl { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; font-family: var(--mono); }
+  .stat-val { font-size: 22px; font-weight: 600; color: var(--ink); font-family: var(--mono); }
+  .stat-val.red { color: var(--danger); }
+
+  /* ── Heatmap ── */
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: .6px;
+    margin-bottom: 8px; font-family: var(--mono);
+  }
+  .heatmap { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 16px; }
+  .hm-cell {
+    width: 30px; height: 30px; border-radius: var(--radius-sm);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; font-size: 9px; font-weight: 600;
+    font-family: var(--mono); line-height: 1.2; cursor: default;
+    border: 1px solid transparent;
+  }
+  .hm-ok   { background: var(--leave-bg); color: var(--leave-text); border-color: var(--leave-border); }
+  .hm-tight{ background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-border); }
+  .hm-low  { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-border); }
+  .hm-zero { background: var(--off-bg); color: var(--off-text); border-color: var(--off-border); }
+
+  /* ── Breakdown table ── */
+  .breakdown-wrap {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; background: var(--surface);
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    margin-bottom: 20px;
+  }
+  .bdtbl { border-collapse: collapse; width: 100%; }
+  .bdtbl thead th {
+    background: var(--surface-2); font-family: var(--mono);
+    font-size: 10px; font-weight: 500; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: .4px;
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .bdtbl tbody tr { border-bottom: 1px solid var(--surface-3); }
+  .bdtbl tbody tr:last-child { border-bottom: none; }
+  .bdtbl tbody tr:hover { background: var(--surface-2); }
+  .bdtbl td { padding: 7px 12px; font-size: 12px; color: var(--ink); vertical-align: middle; }
+  .bdtbl td.date-col { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+  .bdtbl td.dow-col { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+  .bdtbl td.n-col { font-family: var(--mono); font-weight: 600; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500;
+    padding: 3px 9px; border-radius: 99px; white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .sb-ok   { background: var(--ok-bg); color: var(--ok-text); border-color: var(--ok-border); }
+  .sb-warn { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-border); }
+  .sb-gap  { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-border); }
+  .name-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nchip {
+    font-size: 11px; padding: 2px 7px; border-radius: 99px;
+    font-family: var(--font); border: 1px solid transparent;
+  }
+  .nchip-D { background: var(--day-bg); color: var(--day-text); border-color: var(--day-border); }
+  .nchip-N { background: var(--night-bg); color: var(--night-text); border-color: var(--night-border); }
+  .none-chip { font-size: 11px; color: var(--ink-4); font-family: var(--mono); }
+
+  /* ── Footer ── */
+  .footer-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--ink-4);
+  }
+  .footer-bar .hint { display: flex; align-items: center; gap: 6px; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .controls, .filters, button.act, .del-btn { display: none !important; }
+    .page-shell { padding: 16px; }
+    .tbl-wrap, .breakdown-wrap { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Monthly Roster Plan</h1>
+      <div class="page-meta">
+        <span id="header-month">June 2026</span>
+        <span>·</span>
+        <span>Owner: Team Lead</span>
+        <span>·</span>
+        <span>Updated: <span id="updated-date"></span></span>
+      </div>
+    </div>
+    <span class="status-pill">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5"/></svg>
+      Draft
+    </span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Month</label>
+      <input type="month" id="month-picker" value="2026-06">
+    </div>
+    <div class="ctrl-group">
+      <label>Min coverage</label>
+      <input type="range" id="thresh" min="1" max="6" value="2" step="1">
+      <span class="ctrl-val" id="thresh-val">2</span>
+      <span style="font-size:11px;color:var(--ink-3)">staff/day</span>
+    </div>
+    <div class="spacer"></div>
+    <button class="act" id="auto-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.5l-4.9 2.7.9-5.5L4 8.8l5.5-.8z"/></svg>
+      Auto-fill
+    </button>
+    <button class="act" id="clear-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+      Clear
+    </button>
+    <button class="act primary" id="add-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Add staff
+    </button>
+    <button class="act" id="export-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      Export
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <span>Show:</span>
+    <button class="filter-chip active" data-f="all">All staff</button>
+    <button class="filter-chip" data-f="Senior">Senior</button>
+    <button class="filter-chip" data-f="Mid-level">Mid-level</button>
+    <button class="filter-chip" data-f="Junior">Junior</button>
+    <button class="filter-chip" data-f="Lead">Lead</button>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="leg"><div class="leg-swatch leg-D">D</div><span>Day 07–15</span></div>
+    <div class="leg"><div class="leg-swatch leg-N">N</div><span>Night 15–23</span></div>
+    <div class="leg"><div class="leg-swatch leg-L">L</div><span>Leave</span></div>
+    <div class="leg"><div class="leg-swatch leg-O">—</div><span>Off</span></div>
+    <div class="drag-tip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M9 4v9M12 3v10M6 6v7M15 7v5l3 3a4 4 0 01-4 4H9a6 6 0 01-6-6v-2"/></svg>
+      Click to cycle · Drag to fill
+    </div>
+  </div>
+
+  <!-- Alert banner -->
+  <div class="alert-banner" id="alert-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.3L2 21h20L13.7 3.3a2 2 0 00-3.4 0z"/><path d="M12 10v4M12 17h.01"/></svg>
+    <span id="alert-text"></span>
+  </div>
+
+  <!-- Roster table -->
+  <div class="tbl-wrap">
+    <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <!-- Heatmap -->
+  <div class="section-label">Daily coverage heatmap</div>
+  <div class="heatmap" id="heatmap"></div>
+
+  <!-- Breakdown -->
+  <div class="section-label">Per-day coverage breakdown</div>
+  <div class="breakdown-wrap">
+    <table class="bdtbl">
+      <thead><tr>
+        <th>Date</th><th>Day</th><th>On shift</th><th>Status</th>
+        <th>Day shift</th><th>Night shift</th>
+      </tr></thead>
+      <tbody id="breakdown"></tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-bar">
+    <div class="hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+      Shift changes are local to this session. Export to save a static copy for Confluence.
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CYCLE=['D','N','L','O'];
+const ROLES=['Senior','Mid-level','Junior','Lead','Contractor'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let MIN=2, FILTER='all';
+let STATE={year:2026,month:5,staff:[
+  {id:1,name:'Alice Chen',role:'Senior',shifts:{}},
+  {id:2,name:'Ben Torres',role:'Senior',shifts:{}},
+  {id:3,name:'Chloe Smith',role:'Mid-level',shifts:{}},
+  {id:4,name:'Dan Nguyen',role:'Mid-level',shifts:{}},
+  {id:5,name:'Eva Patel',role:'Junior',shifts:{}},
+  {id:6,name:'Felix Okafor',role:'Junior',shifts:{}},
+  {id:7,name:'Grace Li',role:'Senior',shifts:{}},
+  {id:8,name:'Henry Park',role:'Mid-level',shifts:{}},
+],nid:9};
+
+const DEF=[
+  ['D','D','O','D','D','N','N','O','D','D','D','O','D','D','N','O','D','D','D','O','D'],
+  ['N','N','O','N','N','D','D','O','N','N','O','D','D','O','D','N','N','O','N','N','N'],
+  ['D','O','D','D','N','O','D','D','D','N','D','D','O','N','N','D','D','D','O','D','D'],
+  ['N','D','D','O','D','D','N','N','O','D','N','N','D','D','O','D','O','D','N','N','O'],
+  ['D','D','D','O','N','D','D','D','O','D','L','L','L','L','L','N','D','D','D','O','D'],
+  ['O','N','N','D','D','O','N','N','D','D','D','O','N','N','D','D','O','N','N','D','N'],
+  ['D','D','O','D','D','N','O','D','D','D','N','N','O','D','D','O','D','D','N','N','D'],
+  ['N','O','N','N','D','D','D','O','N','N','D','D','D','O','N','N','N','D','D','O','N'],
+];
+
+function workdays(y,m){
+  const r=[];const d=new Date(y,m,1);
+  while(d.getMonth()===m){if(d.getDay()!==0&&d.getDay()!==6)r.push(d.getDate());d.setDate(d.getDate()+1);}
+  return r;
+}
+function isToday(y,m,d){const n=new Date();return n.getFullYear()===y&&n.getMonth()===m&&n.getDate()===d;}
+function weekGroups(wds){
+  const g=[];let c=[];
+  wds.forEach(d=>{if(new Date(STATE.year,STATE.month,d).getDay()===1&&c.length){g.push(c);c=[];}c.push(d);});
+  if(c.length)g.push(c);return g;
+}
+function gs(p,d){return p.shifts[d]||'O';}
+function isActive(sh){return sh==='D'||sh==='N';}
+function onShift(d){return STATE.staff.filter(s=>isActive(gs(s,d)));}
+function isGap(d){return onShift(d).length<MIN;}
+
+function initShifts(){
+  const wds=workdays(STATE.year,STATE.month);
+  STATE.staff.forEach((s,i)=>{
+    if(!Object.keys(s.shifts).length)
+      wds.forEach((d,j)=>{s.shifts[d]=DEF[i%8][j%21]||'O';});
+  });
+}
+
+let dragVal=null,dragging=false;
+
+function render(){
+  const wds=workdays(STATE.year,STATE.month);
+  const groups=weekGroups(wds);
+  const firstG=new Set(groups.map(g=>g[0]));
+  const visible=FILTER==='all'?STATE.staff:STATE.staff.filter(s=>s.role===FILTER);
+
+  /* header */
+  document.getElementById('header-month').textContent=MONTHS[STATE.month]+' '+STATE.year;
+  document.getElementById('updated-date').textContent=new Date().toLocaleDateString('en-AU');
+
+  /* thead */
+  let h1='<tr><th class="h-name">Name</th><th class="h-role">Role</th>';
+  let h2='<tr><th class="h-name"></th><th class="h-role"></th>';
+  groups.forEach((g,gi)=>{
+    g.forEach((d,di)=>{
+      const ws=di===0&&gi>0?' wk-sep':'';
+      const td=isToday(STATE.year,STATE.month,d)?' today-h':'';
+      h1+=`<th class="${ws}${td}">${d}</th>`;
+    });
+    h2+=`<th colspan="${g.length}"${gi>0?' class="wk-sep"':''} style="font-size:10px;color:var(--ink-4);letter-spacing:.2px">Wk ${gi+1}</th>`;
+  });
+  h1+='<th class="h-del"></th></tr>';h2+='<th></th></tr>';
+  document.getElementById('thead').innerHTML=h1+h2;
+
+  /* tbody */
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  visible.forEach(p=>{
+    const tr=document.createElement('tr');
+    let c=`<td class="t-name"><input class="name-in" value="${p.name}" data-id="${p.id}" placeholder="Name"></td>`;
+    c+=`<td class="t-role"><select class="role-in" data-id="${p.id}">`;
+    ROLES.forEach(r=>{c+=`<option${r===p.role?' selected':''}>${r}</option>`;});
+    c+=`</select></td>`;
+    wds.forEach((d,di)=>{
+      const sh=gs(p,d);
+      const ws=firstG.has(d)&&di>0?' wk-sep':'';
+      const tc=isToday(STATE.year,STATE.month,d)?' today-col':'';
+      const gf=isGap(d)?` gap-flag`:'';
+      c+=`<td class="${ws}${tc}"><button class="sc sc-${sh}${gf}" data-id="${p.id}" data-day="${d}">${sh==='O'?'—':sh}</button></td>`;
+    });
+    c+=`<td class="t-del"><button class="del-btn" data-id="${p.id}" title="Remove">×</button></td>`;
+    tr.innerHTML=c;tb.appendChild(tr);
+  });
+
+  updateStats(wds);
+  updateHeatmap(wds);
+  updateBreakdown(wds);
+  updateAlert(wds);
+}
+
+function updateAlert(wds){
+  const gaps=wds.filter(d=>isGap(d));
+  const b=document.getElementById('alert-banner');
+  const t=document.getElementById('alert-text');
+  if(gaps.length){
+    b.classList.add('show');
+    t.innerHTML=`<strong>${gaps.length} coverage gap${gaps.length>1?'s':''}</strong> — days ${gaps.slice(0,8).join(', ')}${gaps.length>8?'…':''} have fewer than ${MIN} staff on shift.`;
+  } else {
+    b.classList.remove('show');
+  }
+}
+
+function updateStats(wds){
+  let d=0,n=0,l=0,o=0,gaps=0;
+  STATE.staff.forEach(s=>wds.forEach(day=>{
+    const sh=gs(s,day);
+    if(sh==='D')d++;else if(sh==='N')n++;else if(sh==='L')l++;else o++;
+  }));
+  wds.forEach(day=>{if(isGap(day))gaps++;});
+  const items=[
+    {lbl:'Team size',val:STATE.staff.length,red:false},
+    {lbl:'Day shifts',val:d,red:false},
+    {lbl:'Night shifts',val:n,red:false},
+    {lbl:'Leave days',val:l,red:false},
+    {lbl:'Coverage gaps',val:gaps,red:gaps>0},
+  ];
+  document.getElementById('stats-grid').innerHTML=items.map(i=>
+    `<div class="stat-card"><div class="stat-lbl">${i.lbl}</div><div class="stat-val${i.red?' red':''}">${i.val}</div></div>`
+  ).join('');
+}
+
+function updateHeatmap(wds){
+  document.getElementById('heatmap').innerHTML=wds.map(d=>{
+    const n=onShift(d).length;
+    const cls=n===0?'hm-zero':n<MIN?'hm-low':n===MIN?'hm-tight':'hm-ok';
+    const title=`${MONTHS[STATE.month]} ${d}: ${n} on shift`;
+    return `<div class="hm-cell ${cls}" title="${title}">${d}<br>${n}</div>`;
+  }).join('');
+}
+
+function updateBreakdown(wds){
+  document.getElementById('breakdown').innerHTML=wds.map(d=>{
+    const dow=DOWS[new Date(STATE.year,STATE.month,d).getDay()];
+    const dayList=STATE.staff.filter(s=>gs(s,d)==='D');
+    const nightList=STATE.staff.filter(s=>gs(s,d)==='N');
+    const n=onShift(d).length;
+    const gap=n<MIN,tight=n===MIN;
+    const badge=gap?'<span class="status-badge sb-gap">⚠ Gap</span>':
+                 tight?'<span class="status-badge sb-warn">~ Tight</span>':
+                 '<span class="status-badge sb-ok">✓ OK</span>';
+    const dc=dayList.length?dayList.map(s=>`<span class="nchip nchip-D">${s.name.split(' ')[0]}</span>`).join(''):'<span class="none-chip">—</span>';
+    const nc=nightList.length?nightList.map(s=>`<span class="nchip nchip-N">${s.name.split(' ')[0]}</span>`).join(''):'<span class="none-chip">—</span>';
+    const rowbg=gap?'style="background:rgba(192,39,29,0.03)"':'';
+    const td=isToday(STATE.year,STATE.month,d)?'style="background:rgba(32,64,208,0.04)"':'';
+    return `<tr ${rowbg} ${td}>
+      <td class="date-col">${MONTHS[STATE.month]} ${d}</td>
+      <td class="dow-col">${dow}</td>
+      <td class="n-col">${n}<span style="font-weight:400;color:var(--ink-3)"> / ${STATE.staff.length}</span></td>
+      <td>${badge}</td>
+      <td><div class="name-chips">${dc}</div></td>
+      <td><div class="name-chips">${nc}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+/* Events */
+document.getElementById('tbody').addEventListener('mousedown',e=>{
+  const b=e.target.closest('.sc');if(!b)return;e.preventDefault();
+  const p=STATE.staff.find(s=>s.id===+b.dataset.id);if(!p)return;
+  const cur=p.shifts[+b.dataset.day]||'O';
+  const nxt=CYCLE[(CYCLE.indexOf(cur)+1)%CYCLE.length];
+  p.shifts[+b.dataset.day]=nxt;dragVal=nxt;dragging=true;render();
+});
+document.getElementById('tbody').addEventListener('mouseover',e=>{
+  if(!dragging||dragVal===null)return;
+  const b=e.target.closest('.sc');if(!b)return;
+  const p=STATE.staff.find(s=>s.id===+b.dataset.id);if(!p)return;
+  if(gs(p,+b.dataset.day)===dragVal)return;
+  p.shifts[+b.dataset.day]=dragVal;render();
+});
+document.addEventListener('mouseup',()=>{dragging=false;dragVal=null;});
+
+document.getElementById('tbody').addEventListener('click',e=>{
+  const db=e.target.closest('.del-btn');
+  if(db){STATE.staff=STATE.staff.filter(s=>s.id!==+db.dataset.id);render();}
+});
+document.getElementById('tbody').addEventListener('change',e=>{
+  const ni=e.target.closest('.name-in');
+  if(ni){const p=STATE.staff.find(s=>s.id===+ni.dataset.id);if(p)p.name=ni.value;render();return;}
+  const ri=e.target.closest('.role-in');
+  if(ri){const p=STATE.staff.find(s=>s.id===+ri.dataset.id);if(p){p.role=ri.value;render();}}
+});
+
+document.querySelectorAll('.filter-chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');FILTER=c.dataset.f;render();
+  });
+});
+
+document.getElementById('thresh').addEventListener('input',e=>{
+  MIN=+e.target.value;
+  document.getElementById('thresh-val').textContent=MIN;
+  render();
+});
+
+document.getElementById('add-btn').addEventListener('click',()=>{
+  const wds=workdays(STATE.year,STATE.month);
+  const sh={};wds.forEach(d=>{sh[d]='D';});
+  STATE.staff.push({id:STATE.nid++,name:'New Staff',role:'Junior',shifts:sh});render();
+});
+
+document.getElementById('auto-btn').addEventListener('click',()=>{
+  const wds=workdays(STATE.year,STATE.month);
+  STATE.staff.forEach((s,i)=>wds.forEach((d,j)=>{s.shifts[d]=DEF[i%8][j%21]||'O';}));render();
+});
+
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  const wds=workdays(STATE.year,STATE.month);
+  STATE.staff.forEach(s=>wds.forEach(d=>{s.shifts[d]='O';}));render();
+});
+
+document.getElementById('month-picker').addEventListener('change',e=>{
+  const[y,m]=e.target.value.split('-').map(Number);
+  STATE.year=y;STATE.month=m-1;
+  STATE.staff.forEach(s=>{s.shifts={};});initShifts();render();
+});
+
+document.getElementById('export-btn').addEventListener('click',()=>{
+  const wds=workdays(STATE.year,STATE.month);
+  const groups=weekGroups(wds);
+  const firstG=new Set(groups.map(g=>g[0]));
+  const gaps=wds.filter(d=>isGap(d));
+  let d=0,n=0,l=0;
+  STATE.staff.forEach(s=>wds.forEach(day=>{const sh=gs(s,day);if(sh==='D')d++;else if(sh==='N')n++;else if(sh==='L')l++;}));
+
+  const rosterRows=STATE.staff.map(p=>{
+    let r=`<tr><td style="text-align:left;padding:6px 10px;font-weight:600">${p.name}</td><td style="text-align:left;padding:6px 4px;font-size:11px;color:#6B778C">${p.role}</td>`;
+    wds.forEach((day,di)=>{
+      const sh=gs(p,day);
+      const ws=firstG.has(day)&&di>0?'border-left:2px solid #DFE1E6;':'';
+      const colors={D:'background:#DEEBFF;color:#0052CC',N:'background:#EAE6FF;color:#403294',L:'background:#E3FCEF;color:#006644',O:'color:#C1C7D0'};
+      r+=`<td style="${ws}padding:5px 2px;text-align:center"><span style="${colors[sh]};border-radius:3px;font-size:10px;font-weight:700;padding:3px 0;display:block">${sh==='O'?'—':sh}</span></td>`;
+    });
+    return r+`</tr>`;
+  }).join('');
+
+  const breakdownRows=wds.map(day=>{
+    const dow=DOWS[new Date(STATE.year,STATE.month,day).getDay()];
+    const dayN=STATE.staff.filter(s=>gs(s,day)==='D').map(s=>s.name).join(', ')||'—';
+    const nightN=STATE.staff.filter(s=>gs(s,day)==='N').map(s=>s.name).join(', ')||'—';
+    const cnt=onShift(day).length;
+    const gap=cnt<MIN,tight=cnt===MIN;
+    const badge=gap?'<span style="background:#FFEBE6;color:#BF2600;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid #FFBDAD">⚠ Gap</span>':
+                 tight?'<span style="background:#FFFAE6;color:#974F0C;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid #FFE380">~ Tight</span>':
+                 '<span style="background:#E3FCEF;color:#006644;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid #ABF5D1">✓ OK</span>';
+    return `<tr style="${gap?'background:#FFF8F7;':''}"><td style="padding:6px 10px;font-family:monospace;font-weight:600;white-space:nowrap">${MONTHS[STATE.month]} ${day}</td><td style="padding:6px 10px;font-family:monospace;font-size:11px;color:#6B778C">${dow}</td><td style="padding:6px 10px;font-family:monospace;font-weight:600">${cnt} / ${STATE.staff.length}</td><td style="padding:6px 10px">${badge}</td><td style="padding:6px 10px;font-size:12px">${dayN}</td><td style="padding:6px 10px;font-size:12px">${nightN}</td></tr>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Roster ${MONTHS[STATE.month]} ${STATE.year}</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;color:#172B4D;padding:32px 40px;max-width:1140px;margin:0 auto}h1{font-size:24px;font-weight:600;margin-bottom:4px}h2{font-size:15px;font-weight:600;margin:28px 0 10px;padding-bottom:8px;border-bottom:1px solid #DFE1E6}.meta{font-size:12px;color:#6B778C;margin-bottom:18px;font-family:monospace}.alert{background:#FFEBE6;border:1px solid #FFBDAD;border-left:4px solid #DE350B;border-radius:4px;padding:10px 14px;font-size:13px;color:#BF2600;margin-bottom:18px}.ok{background:#E3FCEF;border:1px solid #ABF5D1;border-left:4px solid #00875A;border-radius:4px;padding:10px 14px;font-size:13px;color:#006644;margin-bottom:18px}.tw{overflow-x:auto;border:1px solid #DFE1E6;border-radius:4px;margin-bottom:12px}table{border-collapse:collapse;width:100%;min-width:700px}thead th{background:#F4F5F7;font-size:10px;font-weight:600;color:#6B778C;text-transform:uppercase;padding:7px 3px;text-align:center;border-bottom:1px solid #DFE1E6;letter-spacing:.4px}thead th.nl{text-align:left;padding-left:10px}tbody tr{border-bottom:1px solid #F4F5F7}tbody tr:hover{background:#FAFBFC}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.stat{background:#F4F5F7;border-radius:4px;padding:10px 14px;border:1px solid #DFE1E6;min-width:100px}.sl{font-size:11px;color:#6B778C;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;font-family:monospace}.sv{font-size:22px;font-weight:700;font-family:monospace}.sv-r{color:#DE350B}</style></head><body>
+<h1>Monthly Roster Plan</h1>
+<div class="meta">${MONTHS[STATE.month]} ${STATE.year} · ${STATE.staff.length} staff · Min coverage: ${MIN} · Generated ${new Date().toLocaleDateString('en-AU')}</div>
+${gaps.length?`<div class="alert"><strong>⚠ ${gaps.length} coverage gap${gaps.length>1?'s':''} detected</strong> — ${gaps.map(d=>`${MONTHS[STATE.month]} ${d}`).join(' · ')} — below minimum of ${MIN} staff on shift</div>`:`<div class="ok"><strong>✓ Full coverage</strong> — all working days meet the minimum threshold of ${MIN} staff on shift</div>`}
+<h2>Shift schedule</h2><div class="tw"><table><thead><tr><th class="nl">Name</th><th class="nl" style="min-width:75px">Role</th>${groups.map((g,gi)=>g.map((dy,di)=>`<th${di===0&&gi>0?' style="border-left:2px solid #DFE1E6"':''}>${dy}</th>`).join('')).join('')}</tr></thead><tbody>${rosterRows}</tbody></table></div>
+<div class="stats"><div class="stat"><div class="sl">Team</div><div class="sv">${STATE.staff.length}</div></div><div class="stat"><div class="sl">Day shifts</div><div class="sv">${d}</div></div><div class="stat"><div class="sl">Night shifts</div><div class="sv">${n}</div></div><div class="stat"><div class="sl">Leave days</div><div class="sv">${l}</div></div><div class="stat"><div class="sl">Gaps</div><div class="sv${gaps.length?' sv-r':''}">${gaps.length}</div></div></div>
+<h2>Per-day coverage breakdown</h2><div class="tw"><table><thead><tr><th class="nl">Date</th><th class="nl">Day</th><th class="nl">On shift</th><th class="nl">Status</th><th class="nl">Day shift staff</th><th class="nl">Night shift staff</th></tr></thead><tbody>${breakdownRows}</tbody></table></div>
+</body></html>`;
+
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=`roster-${MONTHS[STATE.month].toLowerCase()}-${STATE.year}.html`;
+  a.click();
+});
+
+/* Init */
+document.getElementById('updated-date').textContent=new Date().toLocaleDateString('en-AU');
+initShifts();render();
+</script>
+</body>
+</html>
