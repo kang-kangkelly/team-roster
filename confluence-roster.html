@@ -53,7 +53,7 @@ button.act svg{width:14px;height:14px;flex-shrink:0}
 table{border-collapse:collapse;width:100%;min-width:780px;table-layout:fixed}
 thead th{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--ink-3);text-align:center;padding:6px 2px;background:var(--surface-2);border-bottom:0.5px solid var(--border);user-select:none;white-space:nowrap}
 thead th.h-name{text-align:left;padding-left:10px;width:110px;font-family:var(--font);font-size:11px}
-thead th.h-shift{text-align:left;width:150px;font-family:var(--font);font-size:11px}
+thead th.h-shift{text-align:left;width:180px;font-family:var(--font);font-size:11px}
 thead th.h-del{width:32px}
 thead th.wk-sep{border-left:1px solid var(--border-strong)}
 thead th.today-h{background:var(--day-bg);color:var(--day-text)}
@@ -124,6 +124,18 @@ td.today-col{background:rgba(32,64,208,0.04)}
 .nchip-N{background:var(--night-bg);color:var(--night-text);border-color:var(--night-border)}
 .none-chip{font-size:11px;color:var(--ink-4);font-family:var(--mono)}
 .footer-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-4)}
+thead th.wknd-h{background:#F5F0FF;color:#6B40C4}
+td.wknd-col{background:rgba(107,64,196,0.04)}
+.sc-wknd{opacity:.85}
+.tz-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:12px}
+.tz-label{font-weight:500;color:var(--ink-2);white-space:nowrap}
+.tz-sel{font-family:var(--mono);font-size:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:4px 8px;background:var(--surface);color:var(--ink);outline:none;cursor:pointer}
+.tz-sel:focus{border-color:var(--accent)}
+.tz-chip{font-family:var(--mono);font-size:11px;background:var(--day-bg);color:var(--day-text);border:1px solid var(--day-border);padding:2px 8px;border-radius:99px}
+.member-tz-sel{font-family:var(--mono);font-size:10px;border:0.5px solid var(--border);border-radius:3px;padding:2px 4px;background:var(--surface);color:var(--ink);outline:none;cursor:pointer;width:100%}
+.member-tz-sel:focus{border-color:var(--accent)}
+.june-banner{display:flex;align-items:center;gap:10px;background:var(--day-bg);border:1px solid var(--day-border);border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;font-size:13px;color:var(--day-text)}
+.june-banner strong{font-weight:600}
 @media print{body{background:#fff}.controls,button.act,.del-btn{display:none!important}.page-shell{padding:16px}.tbl-wrap,.breakdown-wrap{box-shadow:none}}
 </style>
 </head>
@@ -171,6 +183,19 @@ td.today-col{background:rgba(32,64,208,0.04)}
   </button>
 </div>
 
+<div class="june-banner">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+  <strong>June 2026 Roster</strong> — 7 days/week (Mon–Sun) to cover NAM timezones. Weekends shown with purple tint. All shift times shown in member's local timezone.
+</div>
+<div class="tz-bar">
+  <span class="tz-label">🌐 Team timezone:</span>
+  <select class="tz-sel" id="team-tz"></select>
+  <span class="tz-chip" id="tz-chip">UTC+10</span>
+  <span style="margin-left:8px;font-size:11px;color:var(--ink-3)">NAM coverage:</span>
+  <span style="font-family:var(--mono);font-size:11px;background:#FFF0EF;color:#7A1F1A;border:1px solid #FFBFBB;padding:2px 8px;border-radius:99px">EST UTC-5</span>
+  <span style="font-family:var(--mono);font-size:11px;background:#FFF0EF;color:#7A1F1A;border:1px solid #FFBFBB;padding:2px 8px;border-radius:99px">PST UTC-8</span>
+  <span style="color:var(--ink-4);font-size:11px">· Individual timezones settable per member</span>
+</div>
 <div class="legend">
   <div class="leg"><div class="leg-swatch leg-D">D</div><span>Day</span></div>
   <div class="leg"><div class="leg-swatch leg-N">N</div><span>Night</span></div>
@@ -212,21 +237,22 @@ td.today-col{background:rgba(32,64,208,0.04)}
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TIMEZONES=['Australia/Brisbane (AEST, UTC+10)','Australia/Sydney (AEDT, UTC+11)','Australia/Perth (AWST, UTC+8)','Asia/Singapore (SGT, UTC+8)','Asia/Tokyo (JST, UTC+9)','Europe/London (GMT, UTC+0)','America/New_York (NAM EST, UTC-5)','America/Chicago (NAM CST, UTC-6)','America/Denver (NAM MST, UTC-7)','America/Los_Angeles (NAM PST, UTC-8)','UTC'];
 // Cycle for assigned shift: assigned → Leave → Off → assigned
 // The other shift type is blocked
 
 let MIN=2;
-let STATE={year:2026,month:5,staff:[
-  {id:1,name:'',shiftType:'D',start:'07:00',end:'15:00',shifts:{}},
-  {id:2,name:'',shiftType:'D',start:'07:00',end:'15:00',shifts:{}},
-  {id:3,name:'',shiftType:'N',start:'15:00',end:'23:00',shifts:{}},
-  {id:4,name:'',shiftType:'N',start:'15:00',end:'23:00',shifts:{}},
+let STATE={year:2026,month:5,timezone:'Australia/Brisbane (AEST, UTC+10)',staff:[
+  {id:1,name:'',shiftType:'D',start:'07:00',end:'15:00',timezone:'Australia/Brisbane',shifts:{}},
+  {id:2,name:'',shiftType:'D',start:'07:00',end:'15:00',timezone:'Australia/Brisbane',shifts:{}},
+  {id:3,name:'',shiftType:'N',start:'15:00',end:'23:00',timezone:'Australia/Brisbane',shifts:{}},
+  {id:4,name:'',shiftType:'N',start:'15:00',end:'23:00',timezone:'Australia/Brisbane',shifts:{}},
 ],nid:5};
 
-const DEF_D=['D','D','O','D','D','O','D','D','D','O','D','D','O','D','D','O','D','D','O','D','D'];
-const DEF_N=['N','N','O','N','N','O','N','N','N','O','N','N','O','N','N','O','N','N','O','N','N'];
+const DEF_D=['D','D','D','D','D','O','O','D','D','D','D','D','O','O','D','D','D','D','D','O','O','D','D','D','D','D','O','O','D','D','D'];
+const DEF_N=['N','N','N','N','N','O','O','N','N','N','N','N','O','O','N','N','N','N','N','O','O','N','N','N','N','N','O','O','N','N','N'];
 
-function workdays(y,m){const r=[];const d=new Date(y,m,1);while(d.getMonth()===m){if(d.getDay()!==0&&d.getDay()!==6)r.push(d.getDate());d.setDate(d.getDate()+1);}return r;}
+function workdays(y,m){const r=[];const d=new Date(y,m,1);while(d.getMonth()===m){r.push(d.getDate());d.setDate(d.getDate()+1);}return r;}
 function isToday(y,m,d){const n=new Date();return n.getFullYear()===y&&n.getMonth()===m&&n.getDate()===d;}
 function weekGroups(wds){const g=[];let c=[];wds.forEach(d=>{if(new Date(STATE.year,STATE.month,d).getDay()===1&&c.length){g.push(c);c=[];}c.push(d);});if(c.length)g.push(c);return g;}
 function gs(p,d){return p.shifts[d]||'O';}
@@ -265,8 +291,11 @@ function render(){
   groups.forEach((g,gi)=>{
     g.forEach((d,di)=>{
       const ws=di===0&&gi>0?' wk-sep':'';
-      const td=isToday(STATE.year,STATE.month,d)?' today-h':'';
-      h1+=`<th class="${ws}${td}">${d}</th>`;
+      const dow=new Date(STATE.year,STATE.month,d).getDay();
+      const isWknd=dow===0||dow===6;
+      const td=isToday(STATE.year,STATE.month,d)?' today-h':isWknd?' wknd-h':'';
+      const dowLbl=DOWS[dow];
+      h1+=`<th class="${ws}${td}" title="${dowLbl}">${d}<br><span style="font-size:8px;opacity:.7">${dowLbl}</span></th>`;
     });
     h2+=`<th colspan="${g.length}"${gi>0?' class="wk-sep"':''} style="font-size:10px;color:var(--ink-4);letter-spacing:.2px">Wk ${gi+1}</th>`;
   });
@@ -278,12 +307,13 @@ function render(){
     const tr=document.createElement('tr');
     const selCls=p.shiftType==='D'?'sel-D':'sel-N';
     let c=`<td class="t-name"><input class="name-in" value="${p.name}" data-id="${p.id}" placeholder="Name"></td>`;
+    const tzOpts=TIMEZONES.map(t=>`<option value="${t}"${t===p.timezone?' selected':''}>${t}</option>`).join('');
     c+=`<td class="t-shift">
       <div class="shift-cfg">
         <div class="shift-type-row">
           <select class="shift-type-sel ${selCls}" data-id="${p.id}" data-field="shiftType">
-            <option value="D"${p.shiftType==='D'?' selected':''}>☀ Day shift</option>
-            <option value="N"${p.shiftType==='N'?' selected':''}>🌙 Night shift</option>
+            <option value="D"${p.shiftType==='D'?' selected':''}>☀ Day</option>
+            <option value="N"${p.shiftType==='N'?' selected':''}>🌙 Night</option>
           </select>
         </div>
         <div class="time-range-row">
@@ -291,14 +321,16 @@ function render(){
           <span class="time-sep">–</span>
           <input class="time-in" type="time" value="${p.end}" data-id="${p.id}" data-field="end">
         </div>
+        <select class="member-tz-sel" data-id="${p.id}" data-field="timezone">${tzOpts}</select>
       </div>
     </td>`;
     wds.forEach((d,di)=>{
       const sh=gs(p,d);
       const ws=firstG.has(d)&&di>0?' wk-sep':'';
-      const tc=isToday(STATE.year,STATE.month,d)?' today-col':'';
+      const dow7=new Date(STATE.year,STATE.month,d).getDay();
+      const isWknd7=dow7===0||dow7===6;
+      const tc=isToday(STATE.year,STATE.month,d)?' today-col':isWknd7?' wknd-col':'';
       const gf=isGap(d)?` gap-flag`:'';
-      // If cell value is the opposite shift type, show as off (shouldn't happen but guard)
       const display=sh;
       const disabled=(sh==='D'&&p.shiftType==='N')||(sh==='N'&&p.shiftType==='D')?' sc-disabled':'';
       const timeLabel=sh===p.shiftType?`${p.start}–${p.end}`:sh==='L'?'Leave':'Off';
@@ -389,15 +421,14 @@ document.getElementById('tbody').addEventListener('change',e=>{
     if(p){
       const oldType=p.shiftType;
       p.shiftType=st.value;
-      // Re-map all existing shifts: flip old type to new type, keep L and O
       const wds=workdays(STATE.year,STATE.month);
-      wds.forEach(d=>{
-        const sh=p.shifts[d]||'O';
-        if(sh===oldType) p.shifts[d]=p.shiftType;
-      });
+      wds.forEach(d=>{const sh=p.shifts[d]||'O';if(sh===oldType)p.shifts[d]=p.shiftType;});
       render();
     }
+    return;
   }
+  const mtz=e.target.closest('.member-tz-sel');
+  if(mtz){const p=STATE.staff.find(s=>s.id===+mtz.dataset.id);if(p){p.timezone=mtz.value;render();}return;}
 });
 
 document.getElementById('thresh').addEventListener('input',e=>{MIN=+e.target.value;document.getElementById('thresh-val').textContent=MIN;render();});
@@ -405,7 +436,7 @@ document.getElementById('thresh').addEventListener('input',e=>{MIN=+e.target.val
 document.getElementById('add-btn').addEventListener('click',()=>{
   const wds=workdays(STATE.year,STATE.month);const sh={};
   wds.forEach((d,i)=>{sh[d]=i%3===2?'O':'D';});
-  STATE.staff.push({id:STATE.nid++,name:'New Staff',shiftType:'D',start:'07:00',end:'15:00',shifts:sh});render();
+  const defTz=STATE.timezone||'Australia/Brisbane (AEST, UTC+10)';STATE.staff.push({id:STATE.nid++,name:'',shiftType:'D',start:'07:00',end:'15:00',timezone:defTz,shifts:sh});render();
 });
 
 document.getElementById('auto-btn').addEventListener('click',()=>{
@@ -436,11 +467,14 @@ document.getElementById('export-btn').addEventListener('click',()=>{
   const rosterRows=STATE.staff.map(p=>{
     const typeLabel=p.shiftType==='D'?`☀ Day ${p.start}–${p.end}`:`🌙 Night ${p.start}–${p.end}`;
     const typeBg=p.shiftType==='D'?'background:#DEEBFF;color:#0052CC':'background:#EAE6FF;color:#403294';
-    let r=`<tr><td style="text-align:left;padding:6px 10px;font-weight:600;white-space:nowrap">${p.name}</td>`;
-    r+=`<td style="text-align:left;padding:6px 8px"><span style="${typeBg};border-radius:99px;font-size:11px;font-weight:500;padding:3px 10px;display:inline-block;white-space:nowrap">${typeLabel}</span></td>`;
+    const tzShort=(p.timezone||'').match(/UTC[+-]\d+/)?.[0]||'';
+    let r=`<tr><td style="text-align:left;padding:6px 10px;font-weight:600;white-space:nowrap">${p.name||'(unnamed)'}</td>`;
+    r+=`<td style="text-align:left;padding:6px 8px"><span style="${typeBg};border-radius:99px;font-size:11px;font-weight:500;padding:3px 10px;display:inline-block;white-space:nowrap">${typeLabel}</span><br><span style="font-family:monospace;font-size:10px;color:#6B778C">${tzShort}</span></td>`;
     wds.forEach((d,di)=>{
       const sh=gs(p,d);
       const ws=firstG.has(d)&&di>0?'border-left:2px solid #DFE1E6;':'';
+      const dow_e=new Date(STATE.year,STATE.month,d).getDay();
+      const wkndBg=dow_e===0||dow_e===6?'background:#FAF8FF;':'';
       const colors={D:'background:#DEEBFF;color:#0052CC',N:'background:#EAE6FF;color:#403294',L:'background:#E3FCEF;color:#006644',O:'color:#C1C7D0'};
       r+=`<td style="${ws}padding:4px 2px;text-align:center"><span style="${colors[sh]};border-radius:3px;font-size:10px;font-weight:700;padding:3px 0;display:block">${sh==='O'?'—':sh}</span></td>`;
     });
@@ -456,10 +490,10 @@ document.getElementById('export-btn').addEventListener('click',()=>{
     return `<tr style="${gap?'background:#FFF8F7;':''}"><td style="padding:6px 10px;font-family:monospace;font-weight:600;white-space:nowrap">${MONTHS[STATE.month]} ${d}</td><td style="padding:6px 10px;font-family:monospace;font-size:11px;color:#6B778C">${dow}</td><td style="padding:6px 10px;font-family:monospace;font-weight:600">${cnt} / ${STATE.staff.length}</td><td style="padding:6px 10px">${badge}</td><td style="padding:6px 10px;font-size:12px">${dayN}</td><td style="padding:6px 10px;font-size:12px">${nightN}</td></tr>`;
   }).join('');
 
-  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Roster ${MONTHS[STATE.month]} ${STATE.year}</title>
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>June 2026 Roster</title>
 <style>body{font-family:-apple-system,sans-serif;font-size:13px;color:#172B4D;padding:32px 40px;max-width:1200px;margin:0 auto}h1{font-size:24px;font-weight:600;margin-bottom:4px}h2{font-size:15px;font-weight:600;margin:28px 0 10px;padding-bottom:8px;border-bottom:1px solid #DFE1E6}.meta{font-size:12px;color:#6B778C;margin-bottom:18px;font-family:monospace}.alert{background:#FFEBE6;border:1px solid #FFBDAD;border-left:4px solid #DE350B;border-radius:4px;padding:10px 14px;font-size:13px;color:#BF2600;margin-bottom:18px}.ok{background:#E3FCEF;border:1px solid #ABF5D1;border-left:4px solid #00875A;border-radius:4px;padding:10px 14px;font-size:13px;color:#006644;margin-bottom:18px}.tw{overflow-x:auto;border:1px solid #DFE1E6;border-radius:4px;margin-bottom:12px}table{border-collapse:collapse;width:100%;min-width:700px}thead th{background:#F4F5F7;font-size:10px;font-weight:600;color:#6B778C;text-transform:uppercase;padding:7px 3px;text-align:center;border-bottom:1px solid #DFE1E6;letter-spacing:.4px}thead th.nl{text-align:left;padding-left:10px}tbody tr{border-bottom:1px solid #F4F5F7}tbody tr:hover{background:#FAFBFC}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.stat{background:#F4F5F7;border-radius:4px;padding:10px 14px;border:1px solid #DFE1E6;min-width:100px}.sl{font-size:11px;color:#6B778C;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;font-family:monospace}.sv{font-size:22px;font-weight:700;font-family:monospace}.sv-r{color:#DE350B}</style></head><body>
 <h1>Monthly Roster Plan</h1>
-<div class="meta">${MONTHS[STATE.month]} ${STATE.year} · ${STATE.staff.length} staff · Min coverage: ${MIN} · Generated ${new Date().toLocaleDateString('en-AU')}</div>
+<div class="meta">June 2026 Roster · ${STATE.staff.length} staff · Team timezone: ${STATE.timezone} · Min coverage: ${MIN} · Generated ${new Date().toLocaleDateString('en-AU')}</div>
 ${gaps.length?`<div class="alert"><strong>⚠ ${gaps.length} coverage gap${gaps.length>1?'s':''} detected</strong> — ${gaps.map(d=>`${MONTHS[STATE.month]} ${d}`).join(' · ')}</div>`:`<div class="ok"><strong>✓ Full coverage</strong> — all working days meet the minimum threshold of ${MIN} staff on shift</div>`}
 <h2>Shift schedule</h2><div class="tw"><table><thead><tr><th class="nl">Name</th><th class="nl">Assigned shift</th>${groups.map((g,gi)=>g.map((dy,di)=>`<th${di===0&&gi>0?' style="border-left:2px solid #DFE1E6"':''}>${dy}</th>`).join('')).join('')}</tr></thead><tbody>${rosterRows}</tbody></table></div>
 <div class="stats"><div class="stat"><div class="sl">Team</div><div class="sv">${STATE.staff.length}</div></div><div class="stat"><div class="sl">Day shifts</div><div class="sv">${day}</div></div><div class="stat"><div class="sl">Night shifts</div><div class="sv">${night}</div></div><div class="stat"><div class="sl">Leave days</div><div class="sv">${leave}</div></div><div class="stat"><div class="sl">Gaps</div><div class="sv${gaps.length?' sv-r':''}">${gaps.length}</div></div></div>
@@ -473,6 +507,16 @@ ${gaps.length?`<div class="alert"><strong>⚠ ${gaps.length} coverage gap${gaps.
 });
 
 document.getElementById('updated-date').textContent=new Date().toLocaleDateString('en-AU');
+
+// Populate team timezone selector
+const tzSel=document.getElementById('team-tz');
+TIMEZONES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===STATE.timezone)o.selected=true;tzSel.appendChild(o);});
+tzSel.addEventListener('change',e=>{
+  STATE.timezone=e.target.value;
+  const match=e.target.value.match(/UTC([+-]\d+)/);
+  document.getElementById('tz-chip').textContent=match?'UTC'+match[1]:'UTC';
+});
+
 initShifts();render();
 </script>
 </body>
