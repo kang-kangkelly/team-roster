@@ -217,15 +217,11 @@ const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 let MIN=2;
 let STATE={year:2026,month:5,staff:[
-  {id:1,name:'Alice Chen',  shiftType:'D',start:'07:00',end:'15:00',shifts:{}},
-  {id:2,name:'Ben Torres',  shiftType:'N',start:'15:00',end:'23:00',shifts:{}},
-  {id:3,name:'Chloe Smith', shiftType:'D',start:'08:00',end:'16:00',shifts:{}},
-  {id:4,name:'Dan Nguyen',  shiftType:'N',start:'16:00',end:'00:00',shifts:{}},
-  {id:5,name:'Eva Patel',   shiftType:'D',start:'06:00',end:'14:00',shifts:{}},
-  {id:6,name:'Felix Okafor',shiftType:'N',start:'14:00',end:'22:00',shifts:{}},
-  {id:7,name:'Grace Li',    shiftType:'D',start:'07:00',end:'15:00',shifts:{}},
-  {id:8,name:'Henry Park',  shiftType:'N',start:'17:00',end:'01:00',shifts:{}},
-],nid:9};
+  {id:1,name:'',shiftType:'D',start:'07:00',end:'15:00',shifts:{}},
+  {id:2,name:'',shiftType:'D',start:'07:00',end:'15:00',shifts:{}},
+  {id:3,name:'',shiftType:'N',start:'15:00',end:'23:00',shifts:{}},
+  {id:4,name:'',shiftType:'N',start:'15:00',end:'23:00',shifts:{}},
+],nid:5};
 
 const DEF_D=['D','D','O','D','D','O','D','D','D','O','D','D','O','D','D','O','D','D','O','D','D'];
 const DEF_N=['N','N','O','N','N','O','N','N','N','O','N','N','O','N','N','O','N','N','O','N','N'];
@@ -247,10 +243,9 @@ function nextShift(p, cur){
 
 function initShifts(){
   const wds=workdays(STATE.year,STATE.month);
-  STATE.staff.forEach((s,i)=>{
+  STATE.staff.forEach((s)=>{
     if(!Object.keys(s.shifts).length){
-      const pat=s.shiftType==='D'?DEF_D:DEF_N;
-      wds.forEach((d,j)=>{s.shifts[d]=pat[j%21];});
+      wds.forEach((d)=>{s.shifts[d]='O';});
     }
   });
 }
